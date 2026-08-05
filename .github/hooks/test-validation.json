@@ -1,0 +1,24 @@
+{
+  "hooks": {
+    "PreToolUse": [
+      {
+        "type": "command",
+        "command": "node .github/hooks/scripts/validate-test-commit.js",
+        "windows": "node .github/hooks/scripts/validate-test-commit.js",
+        "linux": "node .github/hooks/scripts/validate-test-commit.js",
+        "osx": "node .github/hooks/scripts/validate-test-commit.js",
+        "timeout": 30
+      }
+    ],
+    "PostToolUse": [
+      {
+        "type": "command",
+        "command": "node .github/hooks/scripts/format-test-files.js",
+        "windows": "node .github/hooks/scripts/format-test-files.js",
+        "linux": "node .github/hooks/scripts/format-test-files.js",
+        "osx": "node .github/hooks/scripts/format-test-files.js",
+        "timeout": 20
+      }
+    ]
+  }
+}
