@@ -34,11 +34,11 @@ async function parseJUnitXml() {
                 const failureInfo = testcase.failure?.[0] || testcase.error?.[0];
                 failures.push({
                     title: testcase.$.name,
-                    file: testcase.$.classname?.replace(/\./g, '/') + '.spec.ts' || 'unknown',
-                    suite: suite.$.name,
+                    file: (testcase.$.classname?.replace(/\./g, '/') + '.spec.ts') || 'unknown',
+                    suite: suite.$?.name || 'unknown',
                     error: failureInfo?._ || failureInfo?.$.message || 'Unknown error',
                     errorType: failureInfo?.$.type || 'UnknownError',
-                    duration: parseFloat(testcase.$.time || 0) * 1000,
+                    duration: parseFloat(testcase.$?.time || 0) * 1000,
                 });
             }
         });
@@ -69,7 +69,7 @@ async function parsePlaywrightJson() {
             }
         } catch (err) {
             // Skip invalid JSON files
-            console.warn(`⚠️  Skipping invalid JSON file: ${file}`);
+            console.error(`⚠️  Skipping invalid JSON file: ${file}`);
         }
     }
 
@@ -114,7 +114,8 @@ function parsePlaywrightSuites(suites, failures) {
 }
 
 async function main() {
-    console.log('🔍 Parsing test failures...\n');
+    // Human-readable logs go to stderr so stdout stays pure JSON
+    console.error('🔍 Parsing test failures...');
 
     // Try both formats
     const junitFailures = await parseJUnitXml();
@@ -131,23 +132,26 @@ async function main() {
     }, []);
 
     if (uniqueFailures.length === 0) {
-        console.log('✅ No test failures found!');
+        console.error('✅ No test failures found!');
+        // Important: output valid JSON to stdout for the caller
+        console.log(JSON.stringify([]));
         process.exit(0);
     }
 
-    console.log(`❌ Found ${uniqueFailures.length} failed test(s):\n`);
+    console.error(`❌ Found ${uniqueFailures.length} failed test(s):`);
     uniqueFailures.forEach((failure, i) => {
-        console.log(`${i + 1}. ${failure.title}`);
-        console.log(`   File: ${failure.file}`);
-        console.log(`   Error: ${failure.errorType}`);
-        console.log('');
+        console.error(`${i + 1}. ${failure.title}`);
+        console.error(`   File: ${failure.file}`);
+        console.error(`   Error: ${failure.errorType}`);
     });
 
-    // Output as JSON for GitHub Actions
+    // Output the machine-readable JSON only on stdout
     console.log(JSON.stringify(uniqueFailures));
+    process.exit(0);
 }
 
 main().catch(err => {
     console.error('❌ Error parsing test failures:', err);
+    // On error, return non-zero so the workflow can notice/handle it
     process.exit(1);
 });

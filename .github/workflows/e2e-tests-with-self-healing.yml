@@ -43,12 +43,14 @@ jobs:
         id: test-run
         continue-on-error: true # ⚠️ CRITICAL: Don't fail pipeline on test failures
         run: |
-          set +e 
+          set +e
+          mkdir -p test-results
           npx playwright test tests/${{ env.ENV }}/inventory* \
-            --reporter=json,junit,html,allure-playwright \
+            --reporter=json,junit=./test-results/junit.xml,html,allure-playwright \
             --workers=2 \
             --retries=0
-          echo "exit_code=$?" >> $GITHUB_OUTPUT
+          exit_code=$?
+          echo "exit_code=$exit_code" >> $GITHUB_OUTPUT
         env:
           CI: true
 
@@ -78,9 +80,15 @@ jobs:
           # Save to file for next step
           echo "$failed_tests" > failed-tests.json
 
-          # Count failures
-          failure_count=$(echo "$failed_tests" | jq 'length')
-          echo "failure_count=$failure_count" >> $GITHUB_OUTPUT
+          # Validate JSON before using jq
+          if ! echo "$failed_tests" | jq . >/dev/null 2>&1; then
+            echo "warning: failed_tests is not valid JSON, setting failure_count=0" >&2
+            echo "failure_count=0" >> $GITHUB_OUTPUT
+          else
+            # Count failures
+            failure_count=$(echo "$failed_tests" | jq 'length')
+            echo "failure_count=$failure_count" >> $GITHUB_OUTPUT
+          fi
 
           echo "📊 Found $failure_count failed test(s)"
 
@@ -181,7 +189,7 @@ jobs:
                   "type": "section",
                   "text": {
                     "type": "mrkdwn",
-                    "text": "```${{ steps.self-healing.outputs.report }}```"
+                    "text": "``` ${{ steps.self-healing.outputs.report }} ```"
                   }
                 },
                 {
