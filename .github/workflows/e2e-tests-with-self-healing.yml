@@ -9,6 +9,7 @@ on:
 env:
   NODE_VERSION: "24"
   PLAYWRIGHT_VERSION: "1.40.0"
+  ENV: "e2e"
 
 jobs:
   test:
@@ -42,7 +43,7 @@ jobs:
         id: test-run
         continue-on-error: true # ⚠️ CRITICAL: Don't fail pipeline on test failures
         run: |
-          npx playwright test \
+          npx playwright test tests\${{ env.ENV }}\ \
             --reporter=json,junit,html,allure-playwright \
             --workers=2 \
             --retries=0

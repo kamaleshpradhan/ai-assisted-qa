@@ -29,7 +29,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        environment: [dev, st, sit, e2e]
+        environment: [dev, st, sit, e2e] 
     
     steps:
       - name: Checkout code
