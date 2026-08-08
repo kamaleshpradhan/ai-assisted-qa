@@ -348,7 +348,7 @@ export class InventoryPage extends BasePage {
     async getAllProductNames(): Promise<string[]> {
         // Use allTextContents with built-in auto-waiting
         // Auto-healed: 2026-08-03T14:30:00Z - locator_update (inventory-product-name → inventory-item-name)
-        const names = await this.page.locator('[data-test="inventory-item-name"]').allTextContents();
+        const names = await this.page.locator('[data-test="inventory-item-title"]').allTextContents();
         console.log('Product names retrieved:', names);
         return names.filter(name => name.length > 0);
     }
