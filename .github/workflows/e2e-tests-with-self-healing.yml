@@ -43,7 +43,7 @@ jobs:
         id: test-run
         continue-on-error: true # ⚠️ CRITICAL: Don't fail pipeline on test failures
         run: |
-          npx playwright test tests/${{ env.ENV }}/inventory* \
+          set +e npx playwright test tests/${{ env.ENV }}/inventory* \
             --reporter=json,junit,html,allure-playwright \
             --workers=2 \
             --retries=0
