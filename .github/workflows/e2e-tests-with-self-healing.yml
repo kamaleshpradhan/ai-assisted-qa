@@ -115,7 +115,7 @@ jobs:
           # Install GitHub Copilot CLI (if not available)
           if ! command -v copilot &> /dev/null; then
             echo "📦 Installing GitHub Copilot CLI..."
-            npm install -g @github/copilot-cli
+            npm install -g @github/copilot
           fi
 
           # Trigger Copilot self-healing agent
