@@ -23,7 +23,8 @@ When a test fails in a CI/CD pipeline or local execution, you autonomously:
 - **NEVER** execute Playwright tests merely to discover failures
 - **ALWAYS** assume failure artifacts already exist and contain complete failure context
 - **ONLY** rerun tests AFTER a fix has been applied to verify the healing
-- Failure context is provided via test-results/, playwright-report/, traces, or pipeline logs
+- Failure context is provided via test-results/, playwright-report/, traces, or pipeline log
+- Please read the .github/instructions/test-framework.instructions.md file for detailed test structure, naming standards, selector strategy, and assertion guidelines
 
 ### Ordered Failure Analysis (MANDATORY)
 Perform failure analysis in this **exact order** to systematically diagnose root cause:
