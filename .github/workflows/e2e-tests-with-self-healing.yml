@@ -102,41 +102,74 @@ jobs:
 
           # Read failed tests
           failed_tests=$(cat failed-tests.json)
+          failure_count=$(echo "$failed_tests" | jq -r 'length')
 
           # Create healing branch
           healing_branch="auto-heal/${{ github.run_id }}"
           git checkout -b "$healing_branch"
 
-          # TODO: Integrate with actual self-healing agent
-          # For now, this is a placeholder that would call:
-          # - GitHub Copilot Agent API
-          # - Custom agent endpoint
-          # - Or invoke directly if running in same environment
+          echo "🤖 Triggering GitHub Copilot self-healing agent..."
+          echo "   Failed tests: $failure_count test(s)"
+          echo "   Target branch: $healing_branch"
 
-          echo "⚠️  PLACEHOLDER: Self-healing agent integration needed"
-          echo "   Expected integration: Invoke 'self-healing-test' agent with:"
-          echo "   - Failed tests: $(echo $failed_tests | jq -r 'length') test(s)"
-          echo "   - Target branch: $healing_branch"
-          echo "   - Max retries: 3"
+          # Install GitHub Copilot CLI (if not available)
+          if ! command -v copilot &> /dev/null; then
+            echo "📦 Installing GitHub Copilot CLI..."
+            npm install -g @github/copilot-cli
+          fi
 
-          # Simulate healing result (replace with actual agent invocation)
-          healing_result='{
-            "final_status": "HEALED",
-            "summary": {
-              "total_tests": 1,
-              "healed": 1,
-              "failed": 0
-            },
-            "results": []
-          }'
+          # Trigger Copilot self-healing agent
+          echo "🔄 Running self-healing agent..."
+          set +e
+          copilot_output=$(copilot --allow-all-tools --agent self-healing-test -p "Please analyse the test failures and fix" 2>&1)
+          copilot_exit_code=$?
+          set -e
 
-          echo "status=$(echo $healing_result | jq -r '.final_status')" >> $GITHUB_OUTPUT
+          echo "Agent output:"
+          echo "$copilot_output"
+
+          # Determine healing status based on agent execution
+          if [ $copilot_exit_code -eq 0 ]; then
+            echo "✅ Self-healing agent completed successfully"
+            healing_status="HEALED"
+            healed_count=$failure_count
+            failed_count=0
+          else
+            echo "⚠️  Self-healing agent encountered issues"
+            healing_status="PARTIAL_HEAL"
+            healed_count=0
+            failed_count=$failure_count
+          fi
+
+          # Build healing result JSON
+          healing_result=$(jq -n \
+            --arg status "$healing_status" \
+            --argjson total "$failure_count" \
+            --argjson healed "$healed_count" \
+            --argjson failed "$failed_count" \
+            --arg output "$copilot_output" \
+            '{
+              final_status: $status,
+              summary: {
+                total_tests: $total,
+                healed: $healed,
+                failed: $failed
+              },
+              agent_output: $output,
+              results: []
+            }')
+
+          echo "status=$healing_status" >> $GITHUB_OUTPUT
           echo "report<<EOF" >> $GITHUB_OUTPUT
           echo "$healing_result" >> $GITHUB_OUTPUT
           echo "EOF" >> $GITHUB_OUTPUT
 
           # Save healing report
           echo "$healing_result" > healing-report.json
+
+          echo "📊 Healing Summary:"
+          echo "   Status: $healing_status"
+          echo "   Total: $failure_count | Healed: $healed_count | Failed: $failed_count"
 
       - name: Upload Healing Report
         if: always() && steps.self-healing.outputs.status != ''
