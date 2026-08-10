@@ -146,61 +146,61 @@ jobs:
           path: healing-report.json
           retention-days: 30
 
-      - name: Notify Slack
-        if: always() && steps.self-healing.outputs.status != ''
-        uses: slackapi/slack-github-action@v1
-        with:
-          webhook-url: ${{ secrets.SLACK_WEBHOOK_URL }}
-          payload: |
-            {
-              "text": "🔧 Test Self-Healing Report",
-              "blocks": [
-                {
-                  "type": "header",
-                  "text": {
-                    "type": "plain_text",
-                    "text": "${{ steps.self-healing.outputs.status == 'HEALED' && '✅ Tests Successfully Healed' || '❌ Healing Failed' }}"
-                  }
-                },
-                {
-                  "type": "section",
-                  "fields": [
-                    {
-                      "type": "mrkdwn",
-                      "text": "*Repository:*\n${{ github.repository }}"
-                    },
-                    {
-                      "type": "mrkdwn",
-                      "text": "*Branch:*\n${{ github.ref_name }}"
-                    },
-                    {
-                      "type": "mrkdwn",
-                      "text": "*Status:*\n${{ steps.self-healing.outputs.status }}"
-                    },
-                    {
-                      "type": "mrkdwn",
-                      "text": "*Run ID:*\n${{ github.run_id }}"
-                    }
-                  ]
-                },
-                {
-                  "type": "section",
-                  "text": {
-                    "type": "mrkdwn",
-                    "text": "``` ${{ steps.self-healing.outputs.report }} ```"
-                  }
-                },
-                {
-                  "type": "context",
-                  "elements": [
-                    {
-                      "type": "mrkdwn",
-                      "text": "🔗 <${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}|View Pipeline Run>"
-                    }
-                  ]
-                }
-              ]
-            }
+      # - name: Notify Slack
+      #   if: always() && steps.self-healing.outputs.status != ''
+      #   uses: slackapi/slack-github-action@v1
+      #   with:
+      #     webhook-url: ${{ secrets.SLACK_WEBHOOK_URL }}
+      #     payload: |
+      #       {
+      #         "text": "🔧 Test Self-Healing Report",
+      #         "blocks": [
+      #           {
+      #             "type": "header",
+      #             "text": {
+      #               "type": "plain_text",
+      #               "text": "${{ steps.self-healing.outputs.status == 'HEALED' && '✅ Tests Successfully Healed' || '❌ Healing Failed' }}"
+      #             }
+      #           },
+      #           {
+      #             "type": "section",
+      #             "fields": [
+      #               {
+      #                 "type": "mrkdwn",
+      #                 "text": "*Repository:*\n${{ github.repository }}"
+      #               },
+      #               {
+      #                 "type": "mrkdwn",
+      #                 "text": "*Branch:*\n${{ github.ref_name }}"
+      #               },
+      #               {
+      #                 "type": "mrkdwn",
+      #                 "text": "*Status:*\n${{ steps.self-healing.outputs.status }}"
+      #               },
+      #               {
+      #                 "type": "mrkdwn",
+      #                 "text": "*Run ID:*\n${{ github.run_id }}"
+      #               }
+      #             ]
+      #           },
+      #           {
+      #             "type": "section",
+      #             "text": {
+      #               "type": "mrkdwn",
+      #               "text": "``` ${{ steps.self-healing.outputs.report }} ```"
+      #             }
+      #           },
+      #           {
+      #             "type": "context",
+      #             "elements": [
+      #               {
+      #                 "type": "mrkdwn",
+      #                 "text": "🔗 <${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}|View Pipeline Run>"
+      #               }
+      #             ]
+      #           }
+      #         ]
+      #       }
 
       - name: Check Final Status
         id: check-status
