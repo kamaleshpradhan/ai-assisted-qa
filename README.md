@@ -1,4 +1,4 @@
-# Agentic Test Framework
+# AI Assisted QA Test Framework
 
 Enterprise-grade Playwright test automation framework with multi-environment support, comprehensive reporting, and autonomous test execution capabilities.
 
